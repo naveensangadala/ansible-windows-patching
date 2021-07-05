@@ -1,0 +1,21 @@
+---
+target_host: windows
+inventory_hostname: windows
+patching_windows_reboot: True
+patching_windows_reboot_timeout: 1200
+patching_windows_categories:
+  - "CriticalUpdates"
+  - "SecurityUpdates"
+  - "Updates"
+  - "DefinitionUpdates"
+  - "UpdateRollups"
+  - "ServicePacks"
+  - "FeaturePacks"
+# define custom list of unapproved patches if needed
+unapproved_patches: []
+
+# define custom list of approved patches if needed
+approved_patches: []
+
+warning_message: "Windows Updates are being installed.  Please save any work and log off as the server will reboot when complete."
+

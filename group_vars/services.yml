@@ -1,0 +1,34 @@
+---
+
+win_services: true
+
+win_services_disable:
+    - SCardSvr
+    - SSDPSRV
+    - Fax
+    - RetailDemo
+    - iphlpsvc
+    - WinHttpAutoProxySvc
+    - NcaSvc
+    - PolicyAgent
+    - IKEEXT
+    - MSiSCSI
+    - WpnService
+    - WpnUserService
+    - Spooler
+    - PrintNotify
+    - Application Management 
+
+win_services_manual: []
+#    - Remote Procedure Call Locator
+#    - Removable Storage
+#    - Secondary Logon
+#    - Server
+#    - TCP/IP NetBIOS Helper
+#    - Computer Browser
+#    - Net Logon
+
+win_services_automatic:
+  - Superfetch
+  - MpsSvc
+  - Auto Time Zone Updater

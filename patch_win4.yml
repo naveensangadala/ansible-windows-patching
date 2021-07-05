@@ -1,0 +1,93 @@
+---
+- hosts: all
+  gather_facts: true 
+  remote_user: naveen_sangadala
+  vars_files:
+      - group_vars/patch_vars4.yml 
+  tasks:
+    - name: Warn logged in users of impending reboot
+      win_msg:
+         display_seconds: 60
+         wait: no
+         msg: "{{ warning_message }}" 
+    
+    - name: Check for missing updates
+      win_updates: 
+            state: searched
+            log_path: C:\{{target_host}}.windows_searched_updates.txt
+      register: update_count
+      tags:
+         - search
+     
+    - name: Search and download Windows updates without installing them
+      win_updates:
+         state: downloaded
+         log_path: C:\{{target_host}}.windows_updates_downloaded.txt
+      register: download_updates
+      tags:
+         - download    
+
+    - name: choose which  Windows updates to install
+      win_updates:
+        # blacklist: "{{ unapproved_patches }}"
+        category_names: "{{ patching_windows_categories }}"
+        state: installed
+        log_path: C:\{{target_host}}.windows_installed_updates.txt
+        reboot: "{{ 'yes' if patching_windows_reboot else 'no' }}"
+        reboot_timeout: "{{ patching_windows_reboot_timeout }}"
+        # whitelist: "{{ approved_patches }}"
+      ignore_errors: yes
+      register: win_updates_result
+      tags:
+         - update
+      failed_when: not patching_windows_reboot and win_updates_result.failed is defined and win_updates_result.failed
+
+    - name: Reboot and Retry
+      when: patching_windows_reboot and win_updates_result.msg is defined and win_updates_result.msg == "A reboot is required before more updates can be installed"
+      block:
+        - name: Reboot Windows to retry update installation
+          win_reboot:
+             reboot_timeout: "{{ patching_windows_reboot_timeout }}"
+
+        - name: Install Windows Updates Retry
+          win_updates:
+             category_names: "{{ patching_windows_categories }}"
+             log_path: C:\{{target_host}}.windows_updates_retried.txt
+             reboot: "{{ 'yes' if patching_windows_reboot else 'no' }}"
+             reboot_timeout: "{{ patching_windows_reboot_timeout }}"
+
+# One way to ensure the system is reliable just after a reboot, is to set WinRM to a delayed startup
+
+    - name: Ensure WinRM starts when the system has settled and is ready to work reliably
+      win_service:
+         name: WinRM
+         start_mode: delayed
+
+#    - name: Check if all updates installed
+#      when: win_updates_result.failed_update_count != 0
+#      debug:
+#        msg: "Not all updates installed.  {{ updates_results.failed_update_count }} updates failed to install."
+
+#    - name: Install only security updates as a scheduled task for target server
+#      win_updates:
+#         category_names: SecurityUpdates
+#         use_scheduled_task: yes
+#
+#    - name: Install only particular updates based on the KB numbers
+#      win_updates:
+#         category_name:
+#         - SecurityUpdates
+#         whitelist:
+#         - KB4056892
+#         - KB4073117
+#
+##    - name: Exclude updates based on the update title
+#      win_updates:
+#         category_name:
+#         - SecurityUpdates
+#         - CriticalUpdates
+#         blacklist:
+#         - Windows Malicious Software Removal Tool for Windows
+#         - \d{4}-\d{2} Cumulative Update for Windows Server 2016
+
+

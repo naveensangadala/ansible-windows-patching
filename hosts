@@ -1,0 +1,9 @@
+[localhost]
+34.145.1.xx
+
+[windows]
+34.136.116.xx
+
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python

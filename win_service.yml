@@ -1,0 +1,37 @@
+---
+- hosts: windows
+  gather_facts: true 
+  remote_user: naveen_sangadala
+  vars_files:
+      - group_vars/services.yml 
+  tasks:
+   - name: disable,manual and automatic start of  windows services 
+     block:
+     - name: Disable unnecessary services
+       win_service:
+         name: "{{ item }}"
+         start_mode: disabled
+         state: stopped
+       with_items: "{{ win_services_disable }}"
+       ignore_errors: true
+     
+     - name: Set some services in manual start
+       win_service:
+         name: "{{ item }}"
+         start_mode: manual
+       with_items: "{{ win_services_manual }}"
+       ignore_errors: true
+
+     - name: Set some services in automatic start
+       win_service:
+         name: "{{ item }}"
+         start_mode: auto
+       with_items: "{{ win_services_automatic }}"
+       ignore_errors: true
+
+#     when: ansible_os_family == "Windows" 
+
+     when: win_services is defined and win_services
+     tags:
+       - services
+
