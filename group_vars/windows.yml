@@ -1,5 +1,5 @@
 ansible_user: naveen_sangadala
-ansible_password: qJ[5bxxxx
+ansible_password: xxxx
 ansible_port: 5986
 ansible_connection: winrm
 ansible_winrm_server_cert_validation: ignore
